@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.customlibraryscan" name="Custom Library Scann" version="0.0.1" provider-name="bossanova808">
+<addon id="script.customlibraryscan" name="Custom Library Scan" version="0.0.1" provider-name="bossanova808">
   <requires>
-    <import addon="xbmc.python" version="3.0.1"/>
+    <import addon="xbmc.python" version="3.0.0"/>
   </requires>
-  <extension point="xbmc.python.script" library="default.py"></extension>
+  <extension point="xbmc.python.script" library="default.py">
+    <provides>executable</provides>
+  </extension>
   <extension point="xbmc.addon.metadata">
     <summary lang="en_GB">Create custom library scanning recipes to e.g. scan only your TV folders.</summary>
     <description lang="en_GB">
-        This addon will jump back a number of seconds whenever a video is un-paused - to make sure you don't miss anything.
-        You can set the amount of seconds to jump back, and the minimum duration of the pause before the addon will trigger a jump back.
-        It also allows to jump back or forward after rewind or fast-forward of a specified amount of seconds to compensate for over-shooting.
-        (Originally created by Memphiz, up-keep taken over by bossanova808 in 2020 for Kodi Matrix and beyond).
+        To help speed up scanning and to give you more control, use this addon to create custom library scanning recipes (e.g. only TV shows, only Movies, or only a particular path)
     </description>
     <platform>all</platform>
     <license>GPL-3.0-only</license>
