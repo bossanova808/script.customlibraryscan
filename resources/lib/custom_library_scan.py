@@ -4,6 +4,7 @@ import xbmc
 import time
 import json
 import os
+import sys
 from .common import *
 
 # This will hold all the paths we explicitly want to update
@@ -27,21 +28,28 @@ class MyMonitor(xbmc.Monitor):
             paths_to_update.pop(0)
 
 
-def sendLibraryScanRequestForPath(path):
+def sendLibraryScanRequestForPath(path_and_method):
     """
     Send a request to Kodi to update the video library by looking at a specific path.
-    @param path: the path for which to request the library update
+    @param path_and_method: tuple of (path, type) - the path for which to request the library update and a type of 'video' or 'music'
     """
 
-    show_dialogs = get_setting_as_bool('')
+    show_dialogs = get_setting_as_bool('ShowProgressDialogues')
+
+    (path, method) = path_and_method
+
+    if method == 'video':
+        jsonMethod = 'VideoLibrary.Scan'
+    else:
+        jsonMethod = 'AudioLibrary.Scan'
 
     command = json.dumps({
         'jsonrpc': '2.0',
         'id': 0,
-        'method': 'VideoLibrary.Scan',
+        'method': jsonMethod,
         'params': {
             'directory': path,
-            'showdialogs': True
+            'showdialogs': show_dialogs
         }
     })
 
@@ -54,32 +62,45 @@ def sendLibraryScanRequestForPath(path):
     # xbmc.executebuiltin('UpdateLibrary(video,C:\\XBMC\\Video Files\\TV02\\)')
 
 
-def run():
-    """
-    This is 'main' - kicks things off, creates the monitor etc..
-    """
+def customScanAllPaths():
+
     global paths_to_update
 
-    footprints()
-
-    # Create an empty paths.txt file if it doesn't exist yet
-    paths_file = PROFILE + "paths.txt"
-    if not os.path.exists(paths_file):
-        log("Creating " + paths_file + " as doesn't yet exist")
+    # Create empty paths_video.txt and paths_music.text files if they doesn't exist yet
+    paths_video_file = PROFILE + "paths_video.txt"
+    paths_music_file = PROFILE + "paths_music.txt"
+    if not os.path.exists(paths_video_file):
+        log("Creating " + paths_video_file + " as doesn't yet exist")
         os.makedirs(PROFILE)
-        open(paths_file, 'a').close()
+        open(paths_video_file, 'a').close()
+    if not os.path.exists(paths_music_file):
+        log("Creating " + paths_music_file + " as doesn't yet exist")
+        os.makedirs(PROFILE)
+        open(paths_music_file, 'a').close()
 
-    # load the paths to update from our settings file...
-    with open(paths_file) as f:
-        paths_to_update = f.read().splitlines()
+    # load the paths to update from our settings files...
+    with open(paths_video_file) as f:
+        video_paths_to_update = f.read().splitlines()
+    with open(paths_music_file) as f:
+        music_paths_to_update = f.read().splitlines()
+
+    # Make our total list of paths & types to update
+    paths_to_update = []
+    for path in video_paths_to_update:
+        paths_to_update.append((path, 'video'))
+    for path in music_paths_to_update:
+        paths_to_update.append((path, 'music'))
+
+    log("Updating paths, in this order:")
+    log(paths_to_update)
 
     if not paths_to_update:
-        log("No paths to update found in paths.txt - nothing to do...")
+        log("No paths to update found in paths_video.txt or paths_music.txt - nothing to do...")
     else:
         # Kick off the first path's update
         sendLibraryScanRequestForPath(paths_to_update[0])
         # Remove first path from our list
-        paths_to_update.pop(0)
+        video_paths_to_update.pop(0)
 
         # Create a monitor and give it the remaining paths to update - if there are any
         if paths_to_update:
@@ -94,7 +115,25 @@ def run():
                 # either way, we're done...
                 break
 
-    # We're exiting...
+
+def run(args):
+    """
+    This is 'main' - kicks things off, creates the monitor etc..
+    """
+    global paths_to_update
+
+    footprints()
+
+    # The addon is being called with a specific path as an argument...this only works for video paths currently
+    if len(args) > 1 and args[1] == "scan_path":
+        log("Request to scan specific path: " + sys.listitem.getLabel())
+        sendLibraryScanRequestForPath((sys.listitem.getLabel(), 'video'))
+
+    # The addon is being run as a service/or manually...update all the paths in paths_*.txt
+    else:
+        customScanAllPaths()
+
+    # All done, we're exiting...
     footprints(False)
 
 
