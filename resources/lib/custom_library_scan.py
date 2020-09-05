@@ -75,7 +75,6 @@ def customScanAllPaths():
         open(paths_video_file, 'a').close()
     if not os.path.exists(paths_music_file):
         log("Creating " + paths_music_file + " as doesn't yet exist")
-        os.makedirs(PROFILE)
         open(paths_music_file, 'a').close()
 
     # load the paths to update from our settings files...
