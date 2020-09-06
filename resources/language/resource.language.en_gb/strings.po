@@ -31,3 +31,7 @@ msgstr ""
 msgctxt "#32103"
 msgid "General"
 msgstr ""
+
+msgctxt "#32104"
+msgid "Settings Folder (if not default, e.g. network)"
+msgstr ""

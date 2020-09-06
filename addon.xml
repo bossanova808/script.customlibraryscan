@@ -4,6 +4,9 @@
     <import addon="xbmc.python" version="3.0.0"/>
   </requires>
   <extension point="xbmc.service" library="default.py" />
+  <extension point="xbmc.python.script" library="default.py">
+    <provides>executable</provides>
+  </extension>
 <!--  <extension point="kodi.context.item">-->
 <!--    <menu id="kodi.core.main">-->
 <!--      <item library="default.py" args="scan_path">-->

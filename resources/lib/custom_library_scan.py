@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import xbmc
+import xbmcvfs
 import time
 import json
 import os
@@ -16,13 +17,14 @@ class MyMonitor(xbmc.Monitor):
 
     def __init__(self, *args, **kwargs):
         xbmc.Monitor.__init__(self)
-        log('Custom Library Scan Monitor - init')
+        log('Monitor - init')
 
     def onScanFinished(self, library):
 
         global paths_to_update
 
         log("onScanFinished")
+
         if paths_to_update:
             sendLibraryScanRequestForPath(paths_to_update[0])
             paths_to_update.pop(0)
@@ -66,29 +68,46 @@ def customScanAllPaths():
 
     global paths_to_update
 
+    if ADDON.getSetting("SettingsFolder"):
+        settings_folder = ADDON.getSetting("SettingsFolder")
+        paths_video_file = ADDON.getSetting("SettingsFolder") + "paths_video.txt"
+        paths_music_file = ADDON.getSetting("SettingsFolder") + "paths_music.txt"
+    else:
+        settings_folder = PROFILE
+        paths_video_file = PROFILE + "paths_video.txt"
+        paths_music_file = PROFILE + "paths_music.txt"
+
+    log("Settings folder: " + settings_folder)
+    log("Location of paths_video.txt: " + paths_video_file)
+    log("Location of paths_music.txt: " + paths_music_file)
+
+    # Make the settings folder if it doesn't exist yet...
+    if not xbmcvfs.exists(settings_folder):
+        xbmcvfs.mkdirs(settings_folder)
     # Create empty paths_video.txt and paths_music.text files if they doesn't exist yet
-    paths_video_file = PROFILE + "paths_video.txt"
-    paths_music_file = PROFILE + "paths_music.txt"
-    if not os.path.exists(paths_video_file):
+    if not xbmcvfs.exists(paths_video_file):
         log("Creating " + paths_video_file + " as doesn't yet exist")
-        os.makedirs(PROFILE)
-        open(paths_video_file, 'a').close()
-    if not os.path.exists(paths_music_file):
+        with xbmcvfs.File(paths_video_file, 'w') as f:
+            result = f.write("")
+    if not xbmcvfs.exists(paths_music_file):
         log("Creating " + paths_music_file + " as doesn't yet exist")
-        open(paths_music_file, 'a').close()
+        with xbmcvfs.File(paths_music_file, 'w') as f:
+            result = f.write("")
 
     # load the paths to update from our settings files...
-    with open(paths_video_file) as f:
+    with xbmcvfs.File(paths_video_file) as f:
         video_paths_to_update = f.read().splitlines()
-    with open(paths_music_file) as f:
+    with xbmcvfs.File(paths_music_file) as f:
         music_paths_to_update = f.read().splitlines()
 
     # Make our total list of paths & types to update
     paths_to_update = []
     for path in video_paths_to_update:
-        paths_to_update.append((path, 'video'))
+        if path:
+            paths_to_update.append((path.strip(), 'video'))
     for path in music_paths_to_update:
-        paths_to_update.append((path, 'music'))
+        if path:
+            paths_to_update.append((path.strip(), 'music'))
 
     log("Updating paths, in this order:")
     log(paths_to_update)
@@ -99,9 +118,12 @@ def customScanAllPaths():
         # Kick off the first path's update
         sendLibraryScanRequestForPath(paths_to_update[0])
         # Remove first path from our list
-        video_paths_to_update.pop(0)
+        paths_to_update.pop(0)
 
-        # Create a monitor and give it the remaining paths to update - if there are any
+        log("Paths to update is now")
+        log(paths_to_update)
+
+        # Create a monitor which will loop through the remaining paths as each scan finishes...
         if paths_to_update:
             monitor = MyMonitor()
 
@@ -109,10 +131,10 @@ def customScanAllPaths():
             while not monitor.abortRequested() and paths_to_update:
                 if monitor.waitForAbort(1):
                     log("Abort requested")
+                    break
                 elif not paths_to_update:
                     log("No more paths to update")
-                # either way, we're done...
-                break
+                    break
 
 
 def run(args):

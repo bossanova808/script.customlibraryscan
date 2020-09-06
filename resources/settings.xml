@@ -8,6 +8,17 @@
                 <default>true</default>
                 <control type="toggle"/>
             </setting>
+			<setting id="SettingsFolder" type="path" label="32104" help="">
+				<level>0</level>
+				<default/>
+				<constraints>
+					<writable>true</writable>
+					<allowempty>true</allowempty>
+				</constraints>
+				<control type="button" format="path">
+					<heading>32104</heading>
+				</control>
+			</setting>
 			</group>
 		</category>
 	</section>
