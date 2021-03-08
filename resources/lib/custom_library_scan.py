@@ -6,6 +6,7 @@ import time
 import json
 import os
 import sys
+import yaml
 from .common import *
 
 # This will hold all the paths we explicitly want to update
@@ -28,6 +29,37 @@ class MyMonitor(xbmc.Monitor):
         if paths_to_update:
             sendLibraryScanRequestForPath(paths_to_update[0])
             paths_to_update.pop(0)
+
+
+def loadRecipe(recipe_name):
+    """
+    Load a custom scanning recipe from its yaml file - if no filename provided try and load default
+    @return:
+    """
+
+    if not recipe_name:
+        recipe_name = "default"
+
+    if ADDON.getSetting("SettingsFolder"):
+        settings_folder = ADDON.getSetting("SettingsFolder")
+    else:
+        settings_folder = PROFILE
+
+    log("Settings folder: " + settings_folder)
+    recipe_to_load = settings_folder + "/" + recipe_name
+    log("Recipe to load is: " + recipe_name)
+
+    # If there is no default, it's not actually a failure
+    if not xbmcvfs.exists(recipe_to_load) and recipe_name == "default":
+        return
+    
+    # https://stackoverflow.com/questions/1773805/how-can-i-parse-a-yaml-file-in-python
+    with open(recipe_to_load, 'r') as stream:
+        try:
+            yaml.safe_load(recipe_to_load)
+        except yaml.YAMLError as inst:
+            notify(f'Error loading {recipe_to_load} - check logs!')
+            log(inst)
 
 
 def sendLibraryScanRequestForPath(path_and_method):
@@ -55,7 +87,7 @@ def sendLibraryScanRequestForPath(path_and_method):
         }
     })
 
-    send_kodi_json(f'Kick off video library scan for path: {path}', command)
+    send_kodi_json(f'Kick off library scan for path: {path}', command)
 
     # This is another, more direct way to do this
     # Pro is that it doesn't require the JSON RPC to be active
