@@ -14,6 +14,12 @@
 						<heading>32104</heading>
 					</control>
 				</setting>
+				<setting id="StopRequested" type="boolean" label="" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+					<visible>false</visible>
+				</setting>
 			</group>
 		</category>
 	</section>

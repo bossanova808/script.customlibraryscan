@@ -17,7 +17,7 @@ class KodiMonitor(xbmc.Monitor):
 
         log(f'onScanFinished {library}')
 
-        if Store.paths_to_update:
+        if not get_setting_as_bool('StopRequested') and Store.paths_to_update:
             self.sendLibraryScanRequestForPath(Store.paths_to_update[0])
             Store.paths_to_update.pop(0)
 

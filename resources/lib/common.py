@@ -25,6 +25,7 @@ LANGUAGE = ADDON.getLocalizedString
 PROFILE = xbmcvfs.translatePath(ADDON.getAddonInfo('profile'))
 KODI_VERSION = xbmc.getInfoLabel('System.BuildVersion')
 USER_AGENT = "Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.0.1) Gecko/2008070208 Firefox/3.6"
+HOME_WINDOW = xbmcgui.Window(10000)
 WEATHER_WINDOW = xbmcgui.Window(12600)
 
 
@@ -83,6 +84,26 @@ def set_property(window, name, value=""):
     window.setProperty(name, value)
     # if value and value != False and value != 'na.png':
     #     log(f'Set window property: [{name}] - value: [{value}]')
+
+
+def get_property(window, name):
+    """
+    Return the value of a window property
+    @param window:
+    @param name:
+    @return:
+    """
+    return window.getProperty(name)
+
+
+def get_property_as_bool(window, name):
+    """
+    Return the value of a window property as a boolean
+    @param window:
+    @param name:
+    @return:
+    """
+    return window.getProperty(name).lower() == "true"
 
 
 def send_kodi_json(human_description, json_string):
