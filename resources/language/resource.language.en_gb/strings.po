@@ -33,5 +33,9 @@ msgid "General"
 msgstr ""
 
 msgctxt "#32104"
-msgid "Settings Folder (if not default, e.g. network)"
+msgid "Recipes Folder (e.g. network folder)"
+msgstr ""
+
+msgctxt "#32105"
+msgid "Leave blank to use the default addon_data folder for your recipes."
 msgstr ""

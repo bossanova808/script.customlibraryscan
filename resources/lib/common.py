@@ -3,7 +3,7 @@
 # Handy utility functions for Kodi Addons
 # By bossanova808
 # Free in all senses....
-# VERSION 0.1.5 2021-03-08
+# VERSION 0.1.6 2021-03-13
 # (For Kodi Matrix & later)
 
 import xbmc
@@ -94,7 +94,8 @@ def send_kodi_json(human_description, json_string):
     """
     log(f'KODI JSON RPC command: {human_description} [{json_string}]')
     result = xbmc.executeJSONRPC(json_string)
-    log(f'KODI JSON RPC result: {str(result)}')
+    log(f'KODI JSON RPC result: {result}')
+    return result
 
 
 def get_setting(setting):
