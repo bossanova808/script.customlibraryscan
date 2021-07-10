@@ -19,7 +19,28 @@ class KodiMonitor(xbmc.Monitor):
 
         if not get_setting_as_bool('StopRequested') and Store.paths_to_update:
             self.sendLibraryScanRequestForPath(Store.paths_to_update[0])
+            (method, path, show_dialog, clean_after) = Store.paths_to_update[0]
             Store.paths_to_update.pop(0)
+            # Last path done?  Do we need to clean as well?
+            if clean_after:
+                # kick off a clean
+                if method == 'video':
+                    query = 'VideoLibrary.Clean'
+                else:
+                    query = 'AudioLibrary.Clean'
+
+                command = json.dumps({
+                    'jsonrpc': '2.0',
+                    'id': 0,
+                    'method': query,
+                    'params': {
+                        'directory': path,
+                        'showdialogs': show_dialog
+                    }
+                })
+
+                send_kodi_json(f'Requesting {method} library clean (show dialog: {show_dialog}), for path: {path}',
+                               command)
 
     @staticmethod
     def sendLibraryScanRequestForPath(arg):
@@ -31,7 +52,7 @@ class KodiMonitor(xbmc.Monitor):
             show_dialog: whether or not to show the scanning dialog window
         """
 
-        (method, path, show_dialog) = arg
+        (method, path, show_dialog, clean_after) = arg
 
         if method == 'video':
             query = 'VideoLibrary.Scan'

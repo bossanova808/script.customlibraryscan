@@ -76,50 +76,40 @@ def run(args):
             for library_type_to_scan in Store.recipe["order"]:
 
                 method = None
-                show_dialog = None
                 paths = []
+                # Sensible, non destructive defaults...
+                show_dialog = True
+                clean_after = False
 
-                if library_type_to_scan == 'tv':
-                    method = 'video'
-                    try:
-                        paths = Store.recipe['tv']['paths']
-                        show_dialog = Store.recipe['tv']['show_dialog']
-                    except KeyError:
-                        log(f'No {library_type_to_scan} paths found to update')
-                        continue
-                elif library_type_to_scan == 'movies':
-                    method = 'video'
-                    try:
-                        paths = Store.recipe['movies']['paths']
-                        show_dialog = Store.recipe['movies']['show_dialog']
-                    except KeyError:
-                        log(f'No {library_type_to_scan} paths found to update')
-                        continue
-                elif library_type_to_scan == 'music':
+                # 3 of 4 library types are video...
+                method = 'video'
+                if library_type_to_scan == 'music':
                     method = 'audio'
-                    try:
-                        paths = Store.recipe['music']['paths']
-                        show_dialog = Store.recipe['music']['show_dialog']
-                    except KeyError:
-                        log(f'No {library_type_to_scan} paths found to update')
-                        continue
-                elif library_type_to_scan == 'musicvideos':
-                    method = 'video'
-                    try:
-                        paths = Store.recipe['musicvideos']['paths']
-                        show_dialog = Store.recipe['musicvideos']['show_dialog']
-                    except KeyError:
-                        log(f'No {library_type_to_scan} paths found to update')
-                        continue
-                else:
-                    log(f'Library type of {library_type_to_scan} not recognised. ')
 
-                log(
-                    f'Queueing scan of {library_type_to_scan}, method {method}, show_dialogs {show_dialog}, paths {paths}')
+                try:
+                    paths = Store.recipe[library_type_to_scan]['paths']
+                except KeyError:
+                    log(f'No {library_type_to_scan} paths found to update')
+                    continue
+
+                try:
+                    show_dialog = Store.recipe[library_type_to_scan]['show_dialog']
+                except KeyError:
+                    pass
+                try:
+                    clean_after = Store.recipe[library_type_to_scan]['clean_after']
+                except KeyError:
+                    pass
+
+                log(f'Queue scan of {library_type_to_scan}, '
+                    f'method {method}, '
+                    f'show_dialogs {show_dialog}, '
+                    f'clean_after {clean_after}'
+                    f'paths {paths}')
 
                 # store our list of paths to update
                 for path in paths:
-                    Store.paths_to_update.append((method, path, show_dialog))
+                    Store.paths_to_update.append((method, path, show_dialog, clean_after))
 
         # If we've read in the recipe(s) ok, we now have a stored list of paths to scan...
         if len(Store.paths_to_update) > 0 and not get_setting_as_bool('StopRequested'):
